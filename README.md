@@ -31,10 +31,11 @@
 - **通用功能**：登录验证、右上角个人信息查看、密码修改、安全退出登录。
 
 ## 📸 项目部分截图
-<img width="288" height="325" alt="image" src="https://github.com/user-attachments/assets/c6310a71-834b-422f-9381-d761eff11f1f" />
-<img width="197" height="401" alt="image" src="https://github.com/user-attachments/assets/7f4e3787-c743-4618-8277-92c87d7b1ff5" />
-<img width="865" height="415" alt="image" src="https://github.com/user-attachments/assets/046fb772-e889-4b86-a07e-3aa16f73a1c8" />
-<img width="854" height="384" alt="image" src="https://github.com/user-attachments/assets/ca93107f-f984-479b-a281-63aed231d499" />
+
+<img width="197" height="401" alt="c109dcc50bf6312aba774a9e762a9f31" src="https://github.com/user-attachments/assets/151449f7-27c4-431d-b2da-315b7542ba2a" />
+
+<img width="2421" height="1048" alt="b3a133e802723a2e57e4b29cc3f76185" src="https://github.com/user-attachments/assets/cc16460e-92d8-4e97-b3f0-4ab968d89b34" />
+
 
 
 ## 👨‍💻 作者
