@@ -1,10 +1,3 @@
-
----
-
-### 项目二：客户信息管理系统（JavaWeb 全栈项目）
-**复制到 `customer_crm_system/README.md`**
-
-```markdown
 # 🏢 客户信息管理系统 (CRM System)
 
 一个基于 Spring Boot 和 Thymeleaf 开发的多角色企业级客户关系管理简易系统。系统实现了不同权限人员对企业客户、产品及订单数据的精细化日常管理。
@@ -31,13 +24,14 @@
 - **通用功能**：登录验证、右上角个人信息查看、密码修改、安全退出登录。
 
 ## 📸 项目部分截图
-
-<img width="197" height="401" alt="c109dcc50bf6312aba774a9e762a9f31" src="https://github.com/user-attachments/assets/151449f7-27c4-431d-b2da-315b7542ba2a" />
-
-<img width="2421" height="1048" alt="b3a133e802723a2e57e4b29cc3f76185" src="https://github.com/user-attachments/assets/cc16460e-92d8-4e97-b3f0-4ab968d89b34" />
-
+<img width="288" height="325" alt="image" src="https://github.com/user-attachments/assets/bd0d1e81-b088-46d1-8e53-326fcbfde487" />
+<img width="197" height="401" alt="image" src="https://github.com/user-attachments/assets/48bdd780-61e3-4b34-bec2-f4c0814cd9e5" />
+<img width="865" height="415" alt="image" src="https://github.com/user-attachments/assets/6f5cda6a-0fb0-410e-b5f5-247cd0080f16" />
+<img width="827" height="368" alt="image" src="https://github.com/user-attachments/assets/e76b1dbd-1745-4f07-9357-1ba5ee6f4fb0" />
 
 
 ## 👨‍💻 作者
 **[刘乐媛]**
-- GitHub: [@minaliu61](https://github.com/minaliu61)
+- GitHub: [@minaliu61] (https://github.com/minaliu61)
+- Email: minaliu561@gmail.com   1145068665@qq.com
+- Phone: +86 17817281152
