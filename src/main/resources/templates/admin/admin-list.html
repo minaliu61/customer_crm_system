@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员管理 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/crm/admin/index.html">客户信息管理系统</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown nav-admin">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> <span id="currentUsername">管理员</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="/crm/admin/profile.html">个人信息</a>
+                        <a class="dropdown-item" href="/crm/admin/change-password.html">修改密码</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="logoutBtn">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧菜单 -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/index.html">
+                                控制台
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link active" href="/crm/admin/admin-list.html">
+                                管理员管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/salesperson-list.html">
+                                销售人员管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/customer-list.html">
+                                客户管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/product-category.html">
+                                产品类别管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/product-list.html">
+                                产品管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/order-list.html">
+                                订单管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 右侧内容区域 -->
+            <main role="main" class="col-md-10 ml-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">管理员管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-primary" id="addAdminBtn">
+                            <i class="fa fa-plus"></i> 添加管理员
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搜索栏 -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="搜索用户名、姓名或电话">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                    <i class="fa fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>用户名</th>
+                                <th>姓名</th>
+                                <th>电话</th>
+                                <th>邮箱</th>
+                                <th>职位</th>
+                                <th>创建时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <!-- 数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-end" id="pagination">
+                        <!-- 分页将通过JavaScript动态加载 -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- 添加/编辑管理员模态框 -->
+    <div class="modal fade" id="adminModal" tabindex="-1" aria-labelledby="adminModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminModalLabel">添加管理员</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminForm">
+                        <input type="hidden" id="userId">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" class="form-control" id="password">
+                            <small class="form-text text-muted">编辑时留空表示不修改密码</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="realName">姓名</label>
+                            <input type="text" class="form-control" id="realName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">电话</label>
+                            <input type="text" class="form-control" id="phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">邮箱</label>
+                            <input type="email" class="form-control" id="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="position">职位</label>
+                            <input type="text" class="form-control" id="position">
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveAdminBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="/crm/js/common.js"></script>
+    <script>
+        $(function() {
+            let currentPage = 1;
+            let pageSize = 10;
+
+            // 加载管理员列表
+            function loadAdminList(page = 1) {
+                currentPage = page;
+                
+                const searchText = $('#searchInput').val();
+                
+                get('/admin/page', {
+                    pageNum: page,
+                    pageSize: pageSize,
+                    searchText: searchText
+                }).then(res => {
+                    if (res.code === 200 && res.data) {
+                        renderAdminTable(res.data);
+                        renderPagination(res.data);
+                    }
+                });
+            }
+            
+            // 渲染管理员表格
+            function renderAdminTable(pageInfo) {
+                const adminList = pageInfo.list || [];
+                let html = '';
+                
+                if (adminList.length === 0) {
+                    html = '<tr><td colspan="10" class="text-center">暂无数据</td></tr>';
+                } else {
+                    adminList.forEach(admin => {
+                        // 获取user对象
+                        const user = admin.user || {};
+                        
+                        html += `
+                            <tr>
+                                <td>${user.userId}</td>
+                                <td>${user.username}</td>
+                                <td>${user.realName || '-'}</td>
+                                <td>${user.phone || '-'}</td>
+                                <td>${user.email || '-'}</td>
+                                <td>${admin.position || '-'}</td>
+                                <td>${formatDate(user.createTime)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#adminTableBody').html(html);
+
+
+            }
+            
+            // 渲染分页
+            function renderPagination(pageInfo) {
+                const totalPages = pageInfo.pages || 1;
+                let html = '';
+                
+                // 上一页
+                html += `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage - 1}">上一页</a>
+                    </li>
+                `;
+                
+                // 页码
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+                
+                // 下一页
+                html += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage + 1}">下一页</a>
+                    </li>
+                `;
+                
+                $('#pagination').html(html);
+                
+                // 绑定页码点击事件
+                $('.page-link').click(function() {
+                    if (!$(this).parent().hasClass('disabled')) {
+                        const page = $(this).data('page');
+                        loadAdminList(page);
+                    }
+                });
+            }
+            
+            // 添加管理员
+            function addAdmin() {
+                // 重置表单
+                $('#adminForm')[0].reset();
+                $('#userId').val('');
+                $('#password').attr('required', true);
+                
+                // 修改模态框标题
+                $('#adminModalLabel').text('添加管理员');
+                
+                // 显示模态框
+                $('#adminModal').modal('show');
+            }
+            
+            // 编辑管理员
+            function editAdmin(userId) {
+                // 获取管理员信息
+                get(`/admin/${userId}`).then(res => {
+                    if (res.code === 200 && res.data) {
+                        const admin = res.data;
+                        const user = admin.user || {};
+                        
+                        // 填充表单
+                        $('#userId').val(user.userId);
+                        $('#username').val(user.username);
+                        $('#password').val('').attr('required', false);
+                        $('#realName').val(user.realName);
+                        $('#phone').val(user.phone);
+                        $('#email').val(user.email);
+                        $('#position').val(admin.position);
+                        $('#department').val(admin.department);
+                        $('#status').val(user.status);
+                        
+                        // 修改模态框标题
+                        $('#adminModalLabel').text('编辑管理员');
+                        
+                        // 显示模态框
+                        $('#adminModal').modal('show');
+                    }
+                });
+            }
+            
+            // 保存管理员
+            function saveAdmin() {
+                const userId = $('#userId').val();
+                const isEdit = !!userId;
+                
+                // 构建数据
+                const adminData = {
+                    position: $('#position').val(),
+                    department: $('#department').val(),
+                    user: {
+                        userId: userId || null,
+                        username: $('#username').val(),
+                        realName: $('#realName').val(),
+                        phone: $('#phone').val(),
+                        email: $('#email').val(),
+                        status: $('#status').val()
+                    }
+                };
+                
+                // 如果是编辑模式且输入了密码，则添加密码字段
+                if (isEdit) {
+                    if ($('#password').val()) {
+                        adminData.user.password = $('#password').val();
+                    }
+                } else {
+                    adminData.user.password = $('#password').val();
+                    adminData.user.role = 1; // 管理员角色
+                }
+                
+                // 保存数据
+                const savePromise = isEdit ? put('/admin', adminData) : post('/admin', adminData);
+                
+                savePromise.then(res => {
+                    if (res.code === 200) {
+                        // 关闭模态框
+                        $('#adminModal').modal('hide');
+                        
+                        // 重新加载列表
+                        loadAdminList(currentPage);
+                        
+                        // 显示成功消息
+
+                    }
+                });
+            }
+            
+            // 删除管理员
+            function deleteAdmin(userId) {
+                if (confirm('确定要删除该管理员吗？')) {
+                    del(`/admin/${userId}`).then(res => {
+                        if (res.code === 200) {
+                            // 重新加载列表
+                            loadAdminList(currentPage);
+
+                            // 显示成功消息
+
+                        }
+                    });
+                }
+            }
+            
+            // 搜索按钮点击事件
+            $('#searchBtn').click(function() {
+                loadAdminList(1);
+            });
+            
+            // 回车键搜索
+            $('#searchInput').keypress(function(e) {
+                if (e.which === 13) {
+                    loadAdminList(1);
+                }
+            });
+            
+            // 添加管理员按钮点击事件
+            $('#addAdminBtn').click(function() {
+                addAdmin();
+            });
+            
+            // 保存管理员按钮点击事件
+            $('#saveAdminBtn').click(function() {
+                if ($('#adminForm')[0].checkValidity()) {
+                    saveAdmin();
+                } else {
+                    $('#adminForm')[0].reportValidity();
+                }
+            });
+            
+            // 退出登录按钮事件
+            $(document).on('click', '#logoutBtn', function() {
+                logout();
+            });
+            
+            // 初始化加载列表
+            loadAdminList();
+        });
+    </script>
+</body>
+</html> 

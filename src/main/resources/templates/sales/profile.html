@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人信息 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/crm/sales/index.html">客户信息管理系统</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> <span id="currentUsername">销售人员</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="/crm/sales/profile.html">个人信息</a>
+                        <a class="dropdown-item" href="/crm/sales/change-password.html">修改密码</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="logoutBtn">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧菜单 -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+<!--                        <li class="nav-item nav-sales">-->
+<!--                            <a class="nav-link" href="/crm/sales/index.html">-->
+<!--                                <i class="fa fa-dashboard"></i> 控制台-->
+<!--                            </a>-->
+<!--                        </li>-->
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link active" href="/crm/sales/profile.html">
+                                 个人信息
+                            </a>
+                        </li>
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link" href="/crm/sales/customer-list.html">
+                                客户管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link" href="/crm/sales/order-list.html">
+                                订单管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 右侧内容区域 -->
+            <main role="main" class="col-md-10 ml-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">个人信息</h1>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="profileForm">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="username">用户名</label>
+                                            <input type="text" class="form-control" id="username" readonly>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="realName">真实姓名</label>
+                                            <input type="text" class="form-control" id="realName">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="employeeId">员工编号</label>
+                                            <input type="text" class="form-control" id="employeeId" readonly>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="department">部门</label>
+                                            <input type="text" class="form-control" id="department" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="position">职位</label>
+                                            <input type="text" class="form-control" id="position" readonly>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="hireDate">入职日期</label>
+                                            <input type="text" class="form-control" id="hireDate" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <label for="phone">手机号</label>
+                                            <input type="text" class="form-control" id="phone">
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <label for="email">邮箱</label>
+                                            <input type="email" class="form-control" id="email">
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-primary" id="saveBtn">保存修改</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="/crm/js/common.js"></script>
+    <script>
+        $(function() {
+            // 加载销售人员信息
+            function loadSalespersonInfo() {
+                get('/salesperson/profile').then(res => {
+                    if (res.code === 200 && res.data) {
+                        const salesperson = res.data;
+                        $('#username').val(salesperson.user.username);
+                        $('#realName').val(salesperson.user.realName);
+                        $('#employeeId').val(salesperson.salesperson.employeeId);
+                        $('#department').val(salesperson.salesperson.department);
+                        $('#position').val(salesperson.salesperson.position);
+                        $('#hireDate').val(formatDate(salesperson.salesperson.hireDate, 'yyyy-MM-dd'));
+                        $('#phone').val(salesperson.user.phone);
+                        $('#email').val(salesperson.user.email);
+                        
+                        // 设置当前用户名显示
+                        $('#currentUsername').text(salesperson.user.realName || salesperson.user.username);
+                    }
+                });
+            }
+            
+
+            
+            // 保存个人信息
+            $('#saveBtn').click(function() {
+                const data = {
+                    user: {
+                        realName: $('#realName').val(),
+                        phone: $('#phone').val(),
+                        email: $('#email').val()
+                    }
+                };
+                
+                put('/salesperson/profile', data).then(res => {
+                    if (res.code === 200) {
+
+                        loadSalespersonInfo(); // 重新加载信息
+                    } else {
+
+                    }
+                });
+            });
+            
+            // 初始化加载
+            loadSalespersonInfo();
+        });
+    </script>
+</body>
+</html> 

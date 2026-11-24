@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaee.system.mapper.OrderMapper">
+    <resultMap id="OrderMap" type="com.javaee.system.po.Order">
+        <id property="orderId" column="order_id"/>
+        <result property="orderNumber" column="order_no"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="salespersonId" column="salesperson_id"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="payAmount" column="pay_amount"/>
+        <result property="status" column="order_status"/>
+        <result property="payStatus" column="payment_method"/>
+        <result property="payMethod" column="payment_method"/>
+        <result property="payTime" column="payment_time"/>
+        <result property="shipTime" column="shipping_time"/>
+        <result property="completeTime" column="complete_time"/>
+        <result property="address" column="shipping_address"/>
+        <result property="phone" column="shipping_phone"/>
+        <result property="contactPerson" column="shipping_name"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+                <association property="customer" javaType="com.javaee.system.po.Customer">
+            <id property="customerId" column="cust_id"/>
+            <result property="company" column="company"/>
+        </association>
+        <association property="salesperson" javaType="com.javaee.system.po.Salesperson">
+            <id property="salespersonId" column="sales_id"/>
+            <result property="employeeId" column="sales_name"/>
+            <result property="phone" column="sales_phone"/>
+        </association>
+    </resultMap>
+    <sql id="selectOrderVo">
+        SELECT 
+            o.order_id, o.order_no as order_number, o.customer_id, o.salesperson_id, 
+            o.total_amount, o.total_amount as pay_amount, o.order_status, o.payment_method, 
+            o.payment_time, o.shipping_time, o.complete_time, 
+            o.shipping_address, o.shipping_phone, o.shipping_name, o.remark, 
+            o.create_time, o.update_time,
+            c.customer_id as cust_id, c.company,
+            s.salesperson_id as sales_id, s.employee_id as sales_name, u.phone as sales_phone
+        FROM 
+            `order` o
+        LEFT JOIN 
+            customer c ON o.customer_id = c.customer_id
+        LEFT JOIN 
+            salesperson s ON o.salesperson_id = s.salesperson_id
+        LEFT JOIN 
+            user u ON s.user_id = u.user_id
+    </sql>
+    <select id="selectById" parameterType="Long" resultMap="OrderMap">
+        <include refid="selectOrderVo"/>
+        WHERE o.order_id = #{orderId}
+    </select>
+    <select id="selectByOrderNumber" parameterType="String" resultMap="OrderMap">
+        <include refid="selectOrderVo"/>
+        WHERE o.order_number = #{orderNumber}
+    </select>
+    <select id="selectByCustomerId" parameterType="Long" resultMap="OrderMap">
+        <include refid="selectOrderVo"/>
+        WHERE o.customer_id = #{customerId}
+        ORDER BY o.create_time DESC
+    </select>
+    <select id="selectBySalespersonId" parameterType="Long" resultMap="OrderMap">
+        <include refid="selectOrderVo"/>
+        WHERE o.salesperson_id = #{salespersonId}
+        ORDER BY o.create_time DESC
+    </select>
+    <select id="selectByCondition" parameterType="com.javaee.system.po.Order" resultMap="OrderMap">
+        <include refid="selectOrderVo"/>
+        <where>
+            <if test="orderId != null">
+                AND o.order_id = #{orderId}
+            </if>
+            <if test="orderNumber != null and orderNumber != ''">
+                AND o.order_number LIKE CONCAT('%', #{orderNumber}, '%')
+            </if>
+            <if test="customerId != null">
+                AND o.customer_id = #{customerId}
+            </if>
+            <if test="salespersonId != null">
+                AND o.salesperson_id = #{salespersonId}
+            </if>
+            <if test="status != null">
+                AND o.order_status = #{status}
+            </if>
+            <if test="payStatus != null">
+                AND o.payment_method = #{payStatus}
+            </if>
+            <if test="payMethod != null and payMethod != ''">
+                AND o.payment_method = #{payMethod}
+            </if>
+            <if test="contactPerson != null and contactPerson != ''">
+                AND o.shipping_name LIKE CONCAT('%', #{contactPerson}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND o.shipping_phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="customer != null and customer.company != null and customer.company != ''">
+                AND c.company LIKE CONCAT('%', #{customer.company}, '%')
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+    <insert id="insert" parameterType="com.javaee.system.po.Order" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO `order`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            create_time, update_time,
+            <if test="orderNumber != null and orderNumber != ''">order_no,</if>
+            <if test="customerId != null">customer_id,</if>
+            <if test="salespersonId != null">salesperson_id,</if>
+            <if test="totalAmount != null">total_amount,</if>
+            <if test="status != null">order_status,</if>
+            <if test="payMethod != null">payment_method,</if>
+            <if test="payTime != null">payment_time,</if>
+            <if test="shipTime != null">shipping_time,</if>
+            <if test="completeTime != null">complete_time,</if>
+            <if test="address != null">shipping_address,</if>
+            <if test="phone != null">shipping_phone,</if>
+            <if test="contactPerson != null">shipping_name,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            #{createTime}, #{updateTime},
+            <if test="orderNumber != null and orderNumber != ''">#{orderNumber},</if>
+            <if test="customerId != null">#{customerId},</if>
+            <if test="salespersonId != null">#{salespersonId},</if>
+            <if test="totalAmount != null">#{totalAmount},</if>
+            <if test="status != null">#{status},</if>
+            <if test="payMethod != null">#{payMethod},</if>
+            <if test="payTime != null">#{payTime},</if>
+            <if test="shipTime != null">#{shipTime},</if>
+            <if test="completeTime != null">#{completeTime},</if>
+            <if test="address != null">#{address},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="contactPerson != null">#{contactPerson},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+    <update id="update  " parameterType="com.javaee.system.po.Order">
+        UPDATE `order` o, `user` u
+        <set>
+            <if test="orderNumber != null and orderNumber != ''">
+                o.order_no = #{orderNumber},
+            </if>
+            <if test="customerId != null">
+                o.customer_id = #{customerId},
+            </if>
+            <if test="salespersonId != null">
+                o.salesperson_id = #{salespersonId},
+            </if>
+            <if test="totalAmount != null">
+                o.total_amount = #{totalAmount},
+            </if>
+            <if test="payAmount != null">
+                o.total_amount = #{payAmount},
+            </if>
+            <if test="status != null">
+                o.order_status = #{status},
+            </if>
+            <if test="payStatus != null">
+                o.payment_method = #{payStatus},
+            </if>
+            <if test="payMethod != null">
+                o.payment_method = #{payMethod},
+            </if>
+            <if test="payTime != null">
+                o.payment_time = #{payTime},
+            </if>
+            <if test="shipTime != null">
+                o.shipping_time = #{shipTime},
+            </if>
+            <if test="completeTime != null">
+                o.complete_time = #{completeTime},
+            </if>
+            <if test="address != null">
+                o.shipping_address = #{address},
+            </if>
+            <if test="phone != null">
+                o.shipping_phone = #{phone},
+            </if>
+            <if test="contactPerson != null">
+                o.shipping_name = #{contactPerson},
+            </if>
+            <if test="remark != null">
+                o.remark = #{remark},
+            </if>
+            <if test="customerName != null and customerName != ''">
+                u.real_name = #{customerName},
+            </if>
+        </set>
+        WHERE o.order_id = #{orderId}
+        AND u.user_id = #{userId}
+    </update>
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM `order` WHERE order_id = #{orderId}
+    </delete>
+    <select id="getSalesRecords" resultType="java.util.Map">
+        SELECT 
+            o.order_no AS orderNumber,
+            c.company AS customerName,
+            p.product_name AS productName,
+            oi.quantity AS quantity,
+            oi.subtotal AS amount,
+            o.create_time AS salesDate,
+            o.order_status AS status
+        FROM 
+            `order` o
+            JOIN customer c ON o.customer_id = c.customer_id
+            JOIN order_item oi ON o.order_id = oi.order_id
+            JOIN product p ON oi.product_id = p.product_id
+        <where>
+            <if test="salespersonId != null">
+                o.salesperson_id = #{salespersonId}
+            </if>
+            <if test="startDate != null">
+                AND o.create_time &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND o.create_time &lt;= #{endDate}
+            </if>
+            <if test="status != null">
+                AND o.order_status = #{status}
+            </if>
+            <if test="customerName != null and customerName != ''">
+                AND c.company LIKE CONCAT('%', #{customerName}, '%')
+            </if>
+            <if test="productName != null and productName != ''">
+                AND p.product_name LIKE CONCAT('%', #{productName}, '%')
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+</mapper> 

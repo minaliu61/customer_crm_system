@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户管理 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/crm/sales/index.html">客户信息管理系统</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown nav-sales">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> <span id="currentUsername">销售人员</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="/crm/sales/profile.html">个人信息</a>
+                        <a class="dropdown-item" href="/crm/sales/change-password.html">修改密码</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="logoutBtn">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧菜单 -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+<!--                        <li class="nav-item nav-sales">-->
+<!--                            <a class="nav-link" href="/crm/sales/index.html">-->
+<!--                                <i class="fa fa-dashboard"></i> 控制台-->
+<!--                            </a>-->
+<!--                        </li>-->
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link" href="/crm/sales/profile.html">
+                                个人信息
+                            </a>
+                        </li>
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link active" href="/crm/sales/customer-list.html">
+                                 客户管理
+                            </a>
+                        </li>
+
+                        <li class="nav-item nav-sales">
+                            <a class="nav-link" href="/crm/sales/order-list.html">
+                               订单管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 右侧内容区域 -->
+            <main role="main" class="col-md-10 ml-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">客户管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-primary" id="addCustomerBtn">
+                            <i class="fa fa-plus"></i> 添加客户
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 搜索表单 -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form id="searchForm" class="form-inline">
+                            <div class="form-group mx-sm-3 mb-2">
+                                <input type="text" class="form-control" id="searchText" placeholder="客户名称">
+                            </div>
+                            <button type="button" class="btn btn-primary mb-2" id="searchBtn">
+                                <i class="fa fa-search"></i> 搜索
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 客户列表 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>公司名称</th>
+                                <th>行业</th>
+                                <th>联系人</th>
+                                <th>联系电话</th>
+                                <th>电子邮件</th>
+                                <th>所在地区</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTableBody">
+                            <!-- 数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-end" id="pagination">
+                        <!-- 分页将通过JavaScript动态加载 -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- 添加/编辑客户模态框 -->
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalLabel">添加客户</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <input type="hidden" id="customerId">
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="customerName">客户姓名</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="company">公司名称</label>
+                                <input type="text" class="form-control" id="company" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="phone">联系电话</label>
+                                <input type="text" class="form-control" id="phone">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="email">电子邮件</label>
+                                <input type="email" class="form-control" id="email">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="industry">所属行业</label>
+                                <select class="form-control" id="industry">
+                                    <option value="互联网">互联网</option>
+                                    <option value="金融">金融</option>
+                                    <option value="教育">教育</option>
+                                    <option value="医疗">医疗</option>
+                                    <option value="制造业">制造业</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label for="address">详细地址</label>
+                                <input type="text" class="form-control" id="address">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="province">省份</label>
+                                <input type="text" class="form-control" id="province">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="city">城市</label>
+                                <input type="text" class="form-control" id="city">
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="postalCode">邮政编码</label>
+                                <input type="text" class="form-control" id="postalCode">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveCustomerBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客户详情模态框 -->
+    <div class="modal fade" id="customerDetailModal" tabindex="-1" aria-labelledby="customerDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerDetailModalLabel">客户详情</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>客户姓名：</strong><span id="detailCustomerName"></span></p>
+                            <p><strong>公司名称：</strong><span id="detailCompany"></span></p>
+                            <p><strong>联系电话：</strong><span id="detailPhone"></span></p>
+                            <p><strong>电子邮件：</strong><span id="detailEmail"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>所属行业：</strong><span id="detailIndustry"></span></p>
+                            <p><strong>地址：</strong><span id="detailAddress"></span></p>
+                            <p><strong>所在地区：</strong><span id="detailRegion"></span></p>
+                            <p><strong>邮政编码：</strong><span id="detailPostalCode"></span></p>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客户查询与选择模态框 -->
+    <div class="modal fade" id="customerSearchModal" tabindex="-1" aria-labelledby="customerSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerSearchModalLabel">选择客户</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- 客户列表 -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>客户名称</th>
+                                    <th>公司名称</th>
+                                    <th>联系电话</th>
+                                    <th>行业</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerListBody">
+                                <!-- 客户列表将在这里显示 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-success" id="createNewCustomerBtn">新建客户</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="/crm/js/common.js"></script>
+    <script>
+        $(function() {
+            let currentPage = 1;
+            let pageSize = 10;
+            let currentCustomerId = null;
+            
+            // 加载客户列表
+            function loadCustomerList(page = 1) {
+                currentPage = page;
+                
+                // 获取搜索条件
+                const searchText = $('#searchText').val();
+                const searchIndustry = $('#searchIndustry').val();
+                
+                get('/customer/list', {
+                    pageNum: page,
+                    pageSize: pageSize,
+                    searchText: searchText,
+                    industry: searchIndustry
+                }).then(res => {
+                    if (res.code === 200 && res.data) {
+                        renderCustomerTable(res.data);
+                        renderPagination(res.data);
+                    }
+                });
+            }
+            
+            // 渲染客户表格
+            function renderCustomerTable(pageInfo) {
+                console.log("pageInfo=====",pageInfo);
+
+                const customerList = pageInfo || [];
+                let html = '';
+                
+                if (customerList.length === 0) {
+                    html = '<tr><td colspan="8" class="text-center">暂无客户数据</td></tr>';
+                } else {
+                    customerList.forEach(customer => {
+                        const region = [customer.province || '', customer.city || ''].filter(item => item).join(' ');
+                        
+                        html += `
+                            <tr>
+                                <td>${customer.customerId}</td>
+                                <td>${customer.company || '-'}</td>
+                                <td>${customer.industry || '-'}</td>
+                                <td>${customer.user.realName || '-'}</td>
+                                <td>${customer.user.phone || '-'}</td>
+                                <td>${customer.user.email || '-'}</td>
+                                <td>${region || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-btn" data-id="${customer.customerId}">
+                                     编辑
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${customer.customerId}">
+                                        删除
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#customerTableBody').html(html);
+
+                // 绑定编辑按钮事件
+                $('.edit-btn').click(function() {
+                    const customerId = $(this).data('id');
+                    editCustomer(customerId);
+                });
+                
+                // 绑定删除按钮事件
+                $('.delete-btn').click(function() {
+                    const customerId = $(this).data('id');
+                    deleteCustomer(customerId);
+                });
+            }
+            
+            // 渲染分页
+            function renderPagination(pageInfo) {
+                const totalPages = pageInfo.pages || 1;
+                let html = '';
+                
+                // 上一页
+                html += `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage - 1}">上一页</a>
+                    </li>
+                `;
+                
+                // 页码
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+                
+                // 下一页
+                html += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage + 1}">下一页</a>
+                    </li>
+                `;
+                
+                $('#pagination').html(html);
+                
+                // 绑定页码点击事件
+                $('.page-link').click(function() {
+                    if (!$(this).parent().hasClass('disabled')) {
+                        const page = $(this).data('page');
+                        loadCustomerList(page);
+                    }
+                });
+            }
+            
+            // 查看客户详情
+            function viewCustomerDetail(customerId) {
+            }
+            
+            // 添加客户
+            function addCustomer() {
+                // 重置表单
+                $('#customerForm')[0].reset();
+                $('#customerId').val('');
+                
+                // 修改模态框标题
+                $('#customerModalLabel').text('添加客户');
+                
+                // 显示模态框
+                $('#customerModal').modal('show');
+            }
+            
+            // 编辑客户
+            function editCustomer(customerId) {
+                // 获取客户详情
+                get(`/customer/${customerId}`).then(res => {
+                    if (res.code === 200 && res.data) {
+                        const customer = res.data;
+                        
+                        // 填充表单
+                        $('#customerId').val(customer.customerId);
+                        $('#customerName').val(customer.user.realName);
+                        $('#company').val(customer.company);
+                        $('#phone').val(customer.user.phone);
+                        $('#email').val(customer.user.email);
+                        $('#industry').val(customer.industry);
+                        $('#address').val(customer.address);
+                        $('#province').val(customer.province);
+                        $('#city').val(customer.city);
+                        $('#postalCode').val(customer.postalCode);
+                        
+                        // 修改模态框标题
+                        $('#customerModalLabel').text('编辑客户');
+                        
+                        // 显示模态框
+                        $('#customerModal').modal('show');
+                    }
+                });
+            }
+            
+            // 保存客户
+            function saveCustomer() {
+                const customerId = $('#customerId').val();
+                const isEdit = !!customerId;
+                
+                // 构建数据
+                const customerData = {
+                    user: {
+                        realName: $('#customerName').val(),
+                        phone: $('#phone').val(),
+                        email: $('#email').val()
+                    },
+                    company: $('#company').val(),
+                    industry: $('#industry').val(),
+                    address: $('#address').val(),
+                    province: $('#province').val(),
+                    city: $('#city').val(),
+                    postalCode: $('#postalCode').val()
+                };
+                
+                if (isEdit) {
+                    customerData.customerId = customerId;
+                    
+                    // 更新
+                    put('/customer', customerData).then(res => {
+                        if (res.code === 200) {
+                            // 关闭模态框
+                            $('#customerModal').modal('hide');
+                            
+                            // 重新加载列表
+                            loadCustomerList(currentPage);
+                            
+                            // 显示成功消息
+
+                        } else {
+
+                        }
+                    });
+                } else {
+                    // 新增
+                    post('/customer', customerData).then(res => {
+                        if (res.code === 200) {
+                            // 关闭模态框
+                            $('#customerModal').modal('hide');
+                            
+                            // 重新加载列表
+                            loadCustomerList(1);
+                            
+                            // 显示成功消息
+
+                        } else {
+
+                        }
+                    });
+                }
+            }
+            
+            // 删除客户
+            function deleteCustomer(customerId) {
+                if (confirm('确定要删除该客户吗？')) {
+                    del(`/customer/${customerId}`).then(res => {
+                        if (res.code === 200) {
+                            // 重新加载列表
+                            loadCustomerList(currentPage);
+                            
+                            // 显示成功消息
+
+                        } else {
+
+                        }
+                    });
+                }
+            }
+            
+            // 创建订单
+            $('#createOrderBtn').click(function() {
+                if (currentCustomerId) {
+                    window.location.href = `/crm/sales/order-create.html?customerId=${currentCustomerId}`;
+                }
+            });
+            
+            // 添加客户按钮点击事件
+            $('#addCustomerBtn').click(function() {
+                // 获取客户列表
+                // $.ajax({
+                //     url: '/api/customer/list',
+                //     type: 'GET',
+                //     success: function(res) {
+                //         console.log('获取到的数据:', res);
+                //
+                //         // 清空表格
+                //         var customerListBody = $('#customerListBody');
+                //         customerListBody.empty();
+                //
+                //         // 处理数据
+                //         if (res.code === 200 && res.data && res.data.length > 0) {
+                //             // 遍历数据并生成HTML
+                //             $.each(res.data, function(index, customer) {
+                //                 var row = $('<tr></tr>');
+                //
+                //                 // 添加单元格
+                //                 row.append('<td>' + (customer.customerId || '-') + '</td>');
+                //                 // 使用customer.user中的数据
+                //                 row.append('<td>' + (customer.user && customer.user.realName || '-') + '</td>');
+                //                 row.append('<td>' + (customer.company || '-') + '</td>');
+                //                 row.append('<td>' + (customer.user && customer.user.phone || '-') + '</td>');
+                //                 row.append('<td>' + (customer.industry || '-') + '</td>');
+                //
+                //                 // 添加操作按钮
+                //                 var actionCell = $('<td></td>');
+                //                 var selectBtn = $('<button class="btn btn-sm btn-success">选择</button>');
+                //
+                //                 // 绑定选择按钮点击事件
+                //                 selectBtn.click(function() {
+                //                     $('#customerSearchModal').modal('hide');
+                //                     viewCustomerDetail(customer.customerId);
+                //                 });
+                //
+                //                 actionCell.append(selectBtn);
+                //                 row.append(actionCell);
+                //
+                //                 // 添加到表格
+                //                 customerListBody.append(row);
+                //             });
+                //         } else {
+                //             customerListBody.html('<tr><td colspan="6" class="text-center">暂无客户数据</td></tr>');
+                //         }
+                //
+                //         // 显示模态框
+                //         $('#customerSearchModal').modal('show');
+                //     },
+                //     error: function(err) {
+                //         console.error('获取客户列表失败:', err);
+                //         alert('获取客户列表失败');
+                //     }
+                // });
+
+                addCustomer();
+            });
+            
+            // 保存客户按钮点击事件
+            $('#saveCustomerBtn').click(function() {
+                if ($('#customerForm')[0].checkValidity()) {
+                    saveCustomer();
+                } else {
+                    $('#customerForm')[0].reportValidity();
+                }
+            });
+            
+            // 搜索按钮点击事件
+            $('#searchBtn').click(function() {
+                loadCustomerList(1);
+            });
+            // 初始化加载列表
+            loadCustomerList();
+            
+            // 初始化当前用户名显示
+            get('/user/current').then(res => {
+                if (res.code === 200 && res.data) {
+                    $('#currentUsername').text(res.data.realName || res.data.username);
+                }
+            });
+
+            // 退出登录按钮事件
+            $(document).on('click', '#logoutBtn', function() {
+                logout();
+            });
+
+            // 搜索客户相关变量和函数
+            let searchCurrentPage = 1;
+            let searchPageSize = 10;
+
+            // 加载所有客户列表
+            function loadAllCustomers(page = 1) {
+                searchCurrentPage = page;
+                
+                get('/customer/list', {
+                    pageNum: page,
+                    pageSize: searchPageSize
+                }).then(res => {
+                    console.log('API返回数据:', res); // 添加日志查看API返回数据
+                    
+                    if (res.code === 200) {
+                        // 检查数据结构
+                        if (res.data && Array.isArray(res.data)) {
+                            // 如果返回的是数组，直接使用
+                            const pageData = {
+                                list: res.data,
+                                pages: Math.ceil(res.data.length / searchPageSize) || 1
+                            };
+                            renderAllCustomersTable(pageData);
+                            renderAllCustomersPagination(pageData);
+                        } else if (res.data) {
+                            // 如果返回的是分页对象
+                            renderAllCustomersTable(res.data);
+                            renderAllCustomersPagination(res.data);
+                        } else {
+                            // 没有数据的情况
+                            renderAllCustomersTable({ list: [] });
+                            renderAllCustomersPagination({ pages: 1 });
+                        }
+                    } else {
+
+                    }
+                }).catch(err => {
+                    console.error('获取客户列表出错:', err);
+
+                });
+            }
+            
+            // 渲染所有客户表格
+            function renderAllCustomersTable(pageInfo) {
+                const customerList = pageInfo.list || [];
+                let html = '';
+                
+                if (customerList.length === 0) {
+                    html = '<tr><td colspan="7" class="text-center">暂无客户数据</td></tr>';
+                } else {
+                    customerList.forEach(customer => {
+                        console.log('客户数据:', customer); // 添加日志查看数据结构
+                        
+                        // 确保数据结构正确，如果user不存在则使用空对象
+                        const user = customer.user || {};
+                        const region = [customer.province || '', customer.city || ''].filter(item => item).join(' ');
+                        
+                        html += `
+                            <tr>
+                                <td>${customer.customerId || '-'}</td>
+                                <td>${customer.company || '-'}</td>
+                                <td>${customer.industry || '-'}</td>
+                                <td>${user.realName || customer.realName || '-'}</td>
+                                <td>${user.phone || customer.phone || '-'}</td>
+                                <td>${region || '-'}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-success select-customer-btn" data-id="${customer.customerId}">
+                                        选择
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#searchCustomerTableBody').html(html);
+                
+                // 绑定选择客户按钮事件
+                $('.select-customer-btn').click(function() {
+                    const customerId = $(this).data('id');
+                    selectCustomer(customerId);
+                });
+            }
+            
+            // 渲染所有客户分页
+            function renderAllCustomersPagination(pageInfo) {
+                const totalPages = pageInfo.pages || 1;
+                let html = '';
+                
+                // 上一页
+                html += `
+                    <li class="page-item ${searchCurrentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${searchCurrentPage - 1}">上一页</a>
+                    </li>
+                `;
+                
+                // 页码
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `
+                        <li class="page-item ${i === searchCurrentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+                
+                // 下一页
+                html += `
+                    <li class="page-item ${searchCurrentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${searchCurrentPage + 1}">下一页</a>
+                    </li>
+                `;
+                
+                $('#searchPagination').html(html);
+                
+                // 绑定页码点击事件
+                $('#searchPagination .page-link').click(function() {
+                    if (!$(this).parent().hasClass('disabled')) {
+                        const page = $(this).data('page');
+                        loadAllCustomers(page);
+                    }
+                });
+            }
+            
+            // 选择客户
+            function selectCustomer(customerId) {
+                // 获取客户详情
+                get(`/customer/${customerId}`).then(res => {
+                    if (res.code === 200 && res.data) {
+                        // 关闭搜索模态框
+                        $('#customerSearchModal').modal('hide');
+                        
+                        // 打开客户详情模态框
+                        viewCustomerDetail(customerId);
+                    }
+                });
+            }
+
+            // 模态框中的新建客户按钮点击事件
+            $('#createNewCustomerBtn').click(function() {
+                // 关闭搜索模态框
+                $('#customerSearchModal').modal('hide');
+                
+                // 打开添加客户模态框
+                $('#customerForm')[0].reset();
+                $('#customerId').val('');
+                $('#customerModalLabel').text('添加客户');
+                $('#customerModal').modal('show');
+            });
+        });
+    </script>
+</body>
+</html> 

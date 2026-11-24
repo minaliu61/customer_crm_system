@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/crm/admin/index.html">客户信息管理系统</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown nav-admin">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                        <i class="fa fa-user"></i> <span id="currentUsername">管理员</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item" href="/crm/admin/profile.html">个人信息</a>
+                        <a class="dropdown-item" href="/crm/admin/change-password.html">修改密码</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="logoutBtn">退出登录</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 左侧菜单 -->
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/index.html">
+                                控制台
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/admin-list.html">
+                                管理员管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/salesperson-list.html">
+                                销售人员管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/customer-list.html">
+                                客户管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/product-category.html">
+                                产品类别管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link" href="/crm/admin/product-list.html">
+                                产品管理
+                            </a>
+                        </li>
+                        <li class="nav-item nav-admin">
+                            <a class="nav-link active" href="/crm/admin/order-list.html">
+                                订单管理
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 右侧内容区域 -->
+            <main role="main" class="col-md-10 ml-sm-auto main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">订单管理</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <button type="button" class="btn btn-sm btn-primary" id="addOrderBtn">
+                            <i class="fa fa-plus"></i> 添加订单
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>客户</th>
+                                <th>销售人员</th>
+                                <th>订单金额</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            <!-- 数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-end" id="pagination">
+                        <!-- 分页将通过JavaScript动态加载 -->
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <!-- 订单详情模态框 -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderDetailModalLabel">订单详情</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>创建时间：</strong>
+                            <span id="detailCreateTime"></span>
+                        </div>
+
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>客户名称：</strong>
+                            <span id="detailCustomerName"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>联系电话：</strong>
+                            <span id="detailPhone"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>联系人：</strong>
+                            <span id="detailContactPerson"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <strong>收货地址：</strong>
+                            <span id="detailAddress"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>销售人员：</strong>
+                            <span id="detailSalesperson"></span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>订单金额：</strong>
+                            <span id="detailTotalAmount"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>实付金额：</strong>
+                            <span id="detailPayAmount"></span>
+                        </div>
+
+                    </div>
+                    <div class="row mb-3">
+
+                        <div class="col-md-4">
+                            <strong>支付时间：</strong>
+                            <span id="detailPayTime"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>备注：</strong>
+                        <div id="detailRemark" class="border p-2 mt-1"></div>
+                    </div>
+                    <hr>
+                    <h6>订单产品列表</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>产品</th>
+                                    <th>单价</th>
+                                    <th>数量</th>
+                                    <th>金额</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsBody">
+                                <!-- 订单项将通过JavaScript动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="mr-auto">
+                        <div class="btn-group" id="orderActionBtns">
+                            <!-- 订单操作按钮将根据订单状态动态渲染 -->
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="/crm/js/common.js"></script>
+    <script>
+        $(function() {
+            let currentPage = 1;
+            let pageSize = 10;
+            let currentOrderId = null;
+            
+            // 加载订单列表
+            function loadOrderList(page = 1) {
+                currentPage = page;
+                
+                const searchText = $('#searchInput').val();
+                const status = $('#statusFilter').val();
+                const payStatus = $('#payStatusFilter').val();
+                const date = $('#dateFilter').val();
+                
+                get('/order/page', {
+                    pageNum: page,
+                    pageSize: pageSize,
+                    orderNumber: searchText,
+                    customerName: searchText,
+                    status: status,
+                    payStatus: payStatus,
+                    date: date
+                }).then(res => {
+                    if (res.code === 200 && res.data) {
+                        renderOrderTable(res.data);
+                        renderPagination(res.data);
+                    }
+                });
+            }
+            
+            // 渲染订单表格
+            function renderOrderTable(pageInfo) {
+                const orderList = pageInfo.list || [];
+                let html = '';
+                
+                if (orderList.length === 0) {
+                    html = '<tr><td colspan="10" class="text-center">暂无数据</td></tr>';
+                } else {
+                    orderList.forEach(order => {
+                        html += `
+                            <tr>
+                                <td>${order.orderId}</td>
+                                <td>${order.customer ? order.customer.company || order.customer.user.realName : '-'}</td>
+                                <td>${order.salesperson ? order.salesperson.employeeId : '-'}</td>
+                                <td>¥${order.totalAmount.toFixed(2)}</td>
+                                <td>${formatDate(order.createTime)}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${order.orderId}">
+                                         删除
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#orderTableBody').html(html);
+                
+
+                
+                // 绑定删除按钮事件
+                $('.delete-btn').click(function() {
+                    const orderId = $(this).data('id');
+                    deleteOrder(orderId);
+                });
+            }
+            
+            // 渲染订单状态
+            function renderOrderStatus(status) {
+
+            }
+            
+            // 渲染支付状态
+            function renderPayStatus(payStatus) {
+
+            }
+            
+            // 渲染分页
+            function renderPagination(pageInfo) {
+                const totalPages = pageInfo.pages || 1;
+                let html = '';
+                
+                // 上一页
+                html += `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage - 1}">上一页</a>
+                    </li>
+                `;
+                
+                // 页码
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+                
+                // 下一页
+                html += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage + 1}">下一页</a>
+                    </li>
+                `;
+                
+                $('#pagination').html(html);
+                
+                // 绑定页码点击事件
+                $('.page-link').click(function() {
+                    if (!$(this).parent().hasClass('disabled')) {
+                        const page = $(this).data('page');
+                        loadOrderList(page);
+                    }
+                });
+            }
+            
+            // 查看订单详情
+            function viewOrder(orderId) {
+                currentOrderId = orderId;
+                
+                // 获取订单信息
+                get(`/order/${orderId}`).then(res => {
+                    if (res.code === 200 && res.data) {
+                        const order = res.data;
+                        
+                        // 填充订单基本信息
+                        $('#detailOrderNumber').text(order.orderNumber);
+                        $('#detailCreateTime').text(formatDate(order.createTime, 'yyyy-MM-dd HH:mm:ss'));
+                        $('#detailStatus').html(renderOrderStatus(order.status));
+                        
+                        // 填充客户信息
+                        if (order.customer) {
+                            $('#detailCustomerName').text(order.customer.company || order.customer.user.realName);
+                            $('#detailPhone').text(order.phone || (order.customer.user ? order.customer.user.phone : '-'));
+                            $('#detailContactPerson').text(order.contactPerson || (order.customer.user ? order.customer.user.realName : '-'));
+                        } else {
+                            $('#detailCustomerName').text('-');
+                            $('#detailPhone').text('-');
+                            $('#detailContactPerson').text('-');
+                        }
+                        
+                        $('#detailAddress').text(order.address || '-');
+                        
+                        // 填充销售人员信息
+                        console.log(order.salesperson);
+                        console.log(order);
+                        $('#detailSalesperson').text(order.salesperson.employeeId);
+
+                        
+                        // 填充支付信息
+                        $('#detailTotalAmount').text('¥' + order.totalAmount.toFixed(2));
+                        $('#detailPayAmount').text('¥' + (order.payAmount ? order.payAmount.toFixed(2) : '0.00'));
+                        $('#detailPayStatus').html(renderPayStatus(order.payStatus));
+                        $('#detailPayMethod').text(order.payMethod || '-');
+                        $('#detailPayTime').text(order.payTime ? formatDate(order.payTime, 'yyyy-MM-dd HH:mm:ss') : '-');
+                        
+                        // 填充备注
+                        $('#detailRemark').text(order.remark || '无');
+                        
+                        // 渲染订单产品列表
+                        renderOrderItems(order.orderItems || []);
+                        
+                        // 渲染订单操作按钮
+                        renderOrderActionButtons(order.status);
+                        
+                        // 显示模态框
+                        $('#orderDetailModal').modal('show');
+                    }
+                });
+            }
+            
+            // 渲染订单产品列表
+            function renderOrderItems(items) {
+                let html = '';
+                
+                if (items.length === 0) {
+                    html = '<tr><td colspan="4" class="text-center">暂无产品</td></tr>';
+                } else {
+                    items.forEach(item => {
+                        html += `
+                            <tr>
+                                <td>${item.product ? item.product.productName : '-'}</td>
+                                <td>¥${item.price.toFixed(2)}</td>
+                                <td>${item.quantity}</td>
+                                <td>¥${(item.price * item.quantity).toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                
+                $('#orderItemsBody').html(html);
+            }
+            
+            // 渲染订单操作按钮
+            function renderOrderActionButtons(status) {
+                let html = '';
+                
+                switch (status) {
+                    case 0: // 待审核
+                        html = `
+                            <button type="button" class="btn btn-success mr-1" id="approveBtn">
+                                <i class="fa fa-check"></i> 审核通过
+                            </button>
+                            <button type="button" class="btn btn-danger" id="rejectBtn">
+                                <i class="fa fa-times"></i> 取消订单
+                            </button>
+                        `;
+                        break;
+                    case 1: // 已审核
+                        html = `
+                            <button type="button" class="btn btn-info mr-1" id="shipBtn">
+                                <i class="fa fa-truck"></i> 发货
+                            </button>
+                            <button type="button" class="btn btn-danger" id="rejectBtn">
+                                <i class="fa fa-times"></i> 取消订单
+                            </button>
+                        `;
+                        break;
+                    case 2: // 已发货
+                        html = `
+                            <button type="button" class="btn btn-success mr-1" id="completeBtn">
+                                <i class="fa fa-check-circle"></i> 完成订单
+                            </button>
+                        `;
+                        break;
+                }
+                
+                $('#orderActionBtns').html(html);
+                
+                // 绑定按钮事件
+                $('#approveBtn').click(function() {
+                    updateOrderStatus(1, '确定审核通过该订单吗？');
+                });
+                
+                $('#shipBtn').click(function() {
+                    updateOrderStatus(2, '确定将该订单标记为已发货吗？');
+                });
+                
+                $('#completeBtn').click(function() {
+                    updateOrderStatus(3, '确定将该订单标记为已完成吗？');
+                });
+                
+                $('#rejectBtn').click(function() {
+                    updateOrderStatus(4, '确定取消该订单吗？');
+                });
+            }
+            
+            // 更新订单状态
+            function updateOrderStatus(status, confirmMsg) {
+                if (confirm(confirmMsg)) {
+                    put(`/order/status?orderId=${currentOrderId}&status=${status}`).then(res => {
+                        if (res.code === 200) {
+                            // 重新查询订单详情
+                            viewOrder(currentOrderId);
+                            
+                            // 重新加载列表
+                            loadOrderList(currentPage);
+                            
+                            // 显示成功消息
+
+                        }
+                    });
+                }
+            }
+            
+            // 删除订单
+            function deleteOrder(orderId) {
+                if (confirm('确定要删除该订单吗？删除后无法恢复！')) {
+                    del(`/order/${orderId}`).then(res => {
+                        if (res.code === 200) {
+                            // 重新加载列表
+                            loadOrderList(currentPage);
+                            
+                            // 显示成功消息
+
+                        }
+                    });
+                }
+            }
+            
+            // 搜索按钮点击事件
+            $('#searchBtn').click(function() {
+                loadOrderList(1);
+            });
+            
+            // 回车键搜索
+            $('#searchInput').keypress(function(e) {
+                if (e.which === 13) {
+                    loadOrderList(1);
+                }
+            });
+            
+            // 状态筛选变化事件
+            $('#statusFilter, #payStatusFilter').change(function() {
+                loadOrderList(1);
+            });
+            
+            // 日期筛选变化事件
+            $('#dateFilter').change(function() {
+                loadOrderList(1);
+            });
+            
+            // 重置日期按钮点击事件
+            $('#resetDateBtn').click(function() {
+                $('#dateFilter').val('');
+                loadOrderList(1);
+            });
+            
+            // 添加订单按钮点击事件
+            $('#addOrderBtn').click(function() {
+                // 添加订单功能较复杂，提示跳转到专门的订单创建页面
+                alert('订单创建功能较复杂，请在销售人员界面创建订单');
+            });
+            
+            // 退出登录按钮事件
+            $(document).on('click', '#logoutBtn', function() {
+                logout();
+            });
+            
+            // 初始化加载列表
+            loadOrderList();
+        });
+    </script>
+</body>
+</html> 

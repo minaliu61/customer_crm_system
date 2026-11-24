@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaee.system.mapper.SalespersonMapper">
+
+    <resultMap id="SalespersonMap" type="com.javaee.system.po.Salesperson">
+        <id property="salespersonId" column="salesperson_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="department" column="department"/>
+        <result property="position" column="position"/>
+        <result property="hireDate" column="hire_date"/>
+    </resultMap>
+
+    <sql id="selectSalespersonVo">
+        SELECT 
+            salesperson_id, user_id, employee_id, department, position, hire_date
+        FROM salesperson
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="Long" resultMap="SalespersonMap">
+        <include refid="selectSalespersonVo"/>
+        WHERE salesperson_id = #{salespersonId}
+    </select>
+
+    <!-- 根据用户ID查询 -->
+    <select id="selectByUserId" parameterType="Long" resultMap="SalespersonMap">
+        <include refid="selectSalespersonVo"/>
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="SalespersonMap">
+        <include refid="selectSalespersonVo"/>
+        ORDER BY salesperson_id ASC
+    </select>
+
+    <!-- 条件查询 -->
+    <select id="selectByCondition" parameterType="com.javaee.system.po.Salesperson" resultMap="SalespersonMap">
+        <include refid="selectSalespersonVo"/>
+        <where>
+            <if test="salespersonId != null">
+                AND salesperson_id = #{salespersonId}
+            </if>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="employeeId != null and employeeId != ''">
+                AND employee_id LIKE CONCAT('%', #{employeeId}, '%')
+            </if>
+            <if test="department != null and department != ''">
+                AND department = #{department}
+            </if>
+            <if test="position != null and position != ''">
+                AND position = #{position}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据ID集合查询 -->
+    <select id="selectByIds" resultMap="SalespersonMap">
+        <include refid="selectSalespersonVo"/>
+        WHERE salesperson_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.javaee.system.po.Salesperson" useGeneratedKeys="true" keyProperty="salespersonId">
+        INSERT INTO salesperson (
+            user_id, employee_id, department, position, hire_date
+        ) VALUES (
+            #{userId}, #{employeeId}, #{department}, #{position}, #{hireDate}
+        )
+    </insert>
+
+    <!-- 修改 -->
+    <update id="update" parameterType="com.javaee.system.po.Salesperson">
+        UPDATE salesperson
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="employeeId != null and employeeId != ''">
+                employee_id = #{employeeId},
+            </if>
+            <if test="department != null and department != ''">
+                department = #{department},
+            </if>
+            <if test="position != null and position != ''">
+                position = #{position},
+            </if>
+            <if test="hireDate != null">
+                hire_date = #{hireDate},
+            </if>
+        </set>
+        WHERE salesperson_id = #{salespersonId}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM salesperson WHERE salesperson_id = #{salespersonId}
+    </delete>
+
+    <!-- 批量删除 -->
+    <delete id="deleteBatch">
+        DELETE FROM salesperson WHERE salesperson_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 统计数量 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(1) FROM salesperson
+    </select>
+
+
+
+    <!-- 查询销售人员月度统计 -->
+    <select id="selectMonthlyStatistics" resultType="java.util.Map" parameterType="Long">
+        SELECT
+            DATE_FORMAT(o.create_time, '%Y-%m') as month,
+            SUM(o.total_amount) as salesAmount,
+            COUNT(DISTINCT o.customer_id) as customerCount
+        FROM
+            `order` o
+        WHERE
+            o.salesperson_id = #{salespersonId}
+            AND o.order_status != 4 -- 排除已取消的订单
+            AND o.create_time >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY
+            DATE_FORMAT(o.create_time, '%Y-%m')
+        ORDER BY
+            month ASC
+    </select>
+
+    <!-- 查询销售人员产品销售占比 -->
+    <select id="selectProductRatio" resultType="java.util.Map" parameterType="Long">
+        SELECT
+            p.product_name as product,
+            SUM(oi.quantity * oi.price) as amount,
+            SUM(oi.quantity * oi.price) / (
+                SELECT SUM(i.quantity * i.price)
+                FROM order_item i
+                JOIN `order` o ON i.order_id = o.order_id
+                WHERE o.salesperson_id = #{salespersonId} AND o.order_status != 4
+            ) as ratio
+        FROM
+            order_item oi
+        JOIN
+            `order` o ON oi.order_id = o.order_id
+        JOIN
+            product p ON oi.product_id = p.product_id
+        WHERE
+            o.salesperson_id = #{salespersonId}
+            AND o.order_status != 4 -- 排除已取消的订单
+        GROUP BY
+            p.product_name
+        ORDER BY
+            amount DESC
+    </select>
+</mapper> 

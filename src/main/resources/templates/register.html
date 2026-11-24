@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-form">
+            <h2>用户注册</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认密码</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="realName">真实姓名</label>
+                    <input type="text" class="form-control" id="realName" name="realName" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">手机号</label>
+                    <input type="text" class="form-control" id="phone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="role">注册角色</label>
+                    <select class="form-control" id="role" name="role">
+                        <option value="2">销售人员</option>
+                        <option value="3" selected>客户</option>
+                    </select>
+                </div>
+                <div id="customerFields" class="d-none">
+                    <div class="form-group">
+                        <label for="company">公司名称</label>
+                        <input type="text" class="form-control" id="company" name="company">
+                    </div>
+                    <div class="form-group">
+                        <label for="industry">所属行业</label>
+                        <input type="text" class="form-control" id="industry" name="industry">
+                    </div>
+                </div>
+                <div id="salesFields" class="d-none">
+                    <div class="form-group">
+                        <label for="department">部门</label>
+                        <input type="text" class="form-control" id="department" name="department">
+                    </div>
+                    <div class="form-group">
+                        <label for="position">职位</label>
+                        <input type="text" class="form-control" id="position" name="position">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">注册</button>
+                </div>
+                <div class="text-center">
+                    <a href="/crm/login.html">已有账号？立即登录</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="/crm/js/common.js"></script>
+    <script>
+        $(function() {
+            // 根据角色显示不同的表单字段
+            $('#role').change(function() {
+                const role = $(this).val();
+                if (role === '3') {
+                    $('#customerFields').removeClass('d-none');
+                    $('#salesFields').addClass('d-none');
+                } else if (role === '2') {
+                    $('#customerFields').addClass('d-none');
+                    $('#salesFields').removeClass('d-none');
+                }
+            }).trigger('change');
+            
+            // 注册表单提交
+            $('#registerForm').submit(function(e) {
+                e.preventDefault();
+                
+                const username = $('#username').val();
+                const password = $('#password').val();
+                const confirmPassword = $('#confirmPassword').val();
+                const realName = $('#realName').val();
+                const phone = $('#phone').val();
+                const email = $('#email').val();
+                const role = parseInt($('#role').val());
+                
+                // 表单验证
+                if (!username || !password || !confirmPassword || !realName) {
+
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+
+                    return;
+                }
+                
+                // 构建用户数据
+                const userData = {
+                    username,
+                    password,
+                    realName,
+                    phone,
+                    email,
+                    role,
+                    status: 1
+                };
+                
+                // 发送注册请求
+                post('/user', userData).then(res => {
+                    if (res.code === 200) {
+                        const userId = res.data;
+                        
+                        if (role === 3) {
+                            // 客户信息
+                            const customerData = {
+                                userId,
+                                company: $('#company').val(),
+                                industry: $('#industry').val()
+                            };
+                            
+                            // 保存客户信息
+                            return post('/customer', customerData);
+                        } else if (role === 2) {
+                            // 销售人员信息
+                            const salesData = {
+                                userId,
+                                department: $('#department').val(),
+                                position: $('#position').val()
+                            };
+                            
+                            // 保存销售人员信息
+                            return post('/salesperson', salesData);
+                        }
+                    }
+                }).then(() => {
+
+                    
+                    // 延迟跳转
+                    setTimeout(() => {
+                        window.location.href = '/crm/login.html';
+                    }, 1500);
+                }).catch(err => {
+                    console.error('注册失败', err);
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

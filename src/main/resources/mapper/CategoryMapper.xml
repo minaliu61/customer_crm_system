@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaee.system.mapper.CategoryMapper">
+    
+    <sql id="Base_Column_List">
+        category_id, category_name, description, parent_id, status, create_time, update_time
+    </sql>
+    
+    <sql id="Base_Column_List_Prefix">
+        c.category_id, c.category_name, c.description, c.parent_id, c.status, c.create_time, c.update_time
+    </sql>
+    
+    <select id="selectById" resultType="com.javaee.system.po.ProductCategory">
+        SELECT <include refid="Base_Column_List" />
+        FROM product_category
+        WHERE category_id = #{categoryId}
+    </select>
+    
+    <select id="selectByCondition" resultType="com.javaee.system.po.ProductCategory" parameterType="com.javaee.system.po.ProductCategory">
+        SELECT 
+            <include refid="Base_Column_List_Prefix" />,
+            p.category_name as parentName
+        FROM product_category c
+        LEFT JOIN product_category p ON c.parent_id = p.category_id
+        <where>
+            <if test="categoryId != null">
+                AND c.category_id = #{categoryId}
+            </if>
+            <if test="categoryName != null and categoryName != ''">
+                AND c.category_name LIKE CONCAT('%', #{categoryName}, '%')
+            </if>
+            <if test="description != null and description != ''">
+                AND c.description LIKE CONCAT('%', #{description}, '%')
+            </if>
+            <if test="parentId != null">
+                AND c.parent_id = #{parentId}
+            </if>
+            <if test="status != null">
+                AND c.status = #{status}
+            </if>
+        </where>
+        ORDER BY c.category_id ASC
+    </select>
+    
+    <select id="selectAll" resultType="com.javaee.system.po.ProductCategory">
+        SELECT 
+            <include refid="Base_Column_List_Prefix" />,
+            p.category_name as parentName
+        FROM product_category c
+        LEFT JOIN product_category p ON c.parent_id = p.category_id
+        ORDER BY c.category_id ASC
+    </select>
+    
+    <insert id="insert" parameterType="com.javaee.system.po.ProductCategory" useGeneratedKeys="true" keyProperty="categoryId">
+        INSERT INTO product_category (
+            category_name, description, parent_id, status, create_time, update_time
+        ) VALUES (
+            #{categoryName}, #{description}, #{parentId}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+    
+    <update id="update" parameterType="com.javaee.system.po.ProductCategory">
+        UPDATE product_category
+        <set>
+            <if test="categoryName != null">
+                category_name = #{categoryName},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        WHERE category_id = #{categoryId}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM product_category WHERE category_id = #{categoryId}
+    </delete>
+</mapper> 

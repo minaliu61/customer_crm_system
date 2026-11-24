@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaee.system.mapper.CustomerMapper">
+    <sql id="Base_Column_List">
+        customer_id, user_id, company, industry, address, city, province, postal_code
+    </sql>
+    <sql id="Base_Column_List_With_Prefix">
+        c.customer_id, c.user_id, c.company, c.industry, c.address, c.city, c.province, c.postal_code
+    </sql>
+    <select id="selectById" resultType="com.javaee.system.po.Customer">
+        SELECT <include refid="Base_Column_List" />
+        FROM customer
+        WHERE customer_id = #{customerId}
+    </select>
+    <select id="selectByUserId" resultType="com.javaee.system.po.Customer">
+        SELECT <include refid="Base_Column_List" />
+        FROM customer
+        WHERE user_id = #{userId}
+    </select>
+    <select id="selectAll" resultType="com.javaee.system.po.Customer">
+        SELECT <include refid="Base_Column_List" />
+        FROM customer
+        ORDER BY customer_id ASC
+    </select>
+    <select id="selectByCondition" resultType="com.javaee.system.po.Customer" parameterType="com.javaee.system.po.Customer">
+        SELECT <include refid="Base_Column_List_With_Prefix" />, u.username, u.real_name, u.phone, u.email
+        FROM customer c
+        LEFT JOIN user u ON c.user_id = u.user_id
+        <where>
+            <if test="customerId != null">
+                AND c.customer_id = #{customerId}
+            </if>
+            <if test="userId != null">
+                AND c.user_id = #{userId}
+            </if>
+            <if test="company != null and company != ''">
+                AND c.company LIKE CONCAT('%', #{company}, '%')
+            </if>
+            <if test="industry != null and industry != ''">
+                AND c.industry LIKE CONCAT('%', #{industry}, '%')
+            </if>
+            <if test="city != null and city != ''">
+                AND c.city LIKE CONCAT('%', #{city}, '%')
+            </if>
+            <if test="province != null and province != ''">
+                AND c.province LIKE CONCAT('%', #{province}, '%')
+            </if>
+            <if test="user != null and user.username != null and user.username != ''">
+                AND u.username LIKE CONCAT('%', #{user.username}, '%')
+            </if>
+            <if test="user != null and user.realName != null and user.realName != ''">
+                AND u.real_name LIKE CONCAT('%', #{user.realName}, '%')
+            </if>
+            <if test="user != null and user.phone != null and user.phone != ''">
+                AND u.phone LIKE CONCAT('%', #{user.phone}, '%')
+            </if>
+            <if test="user != null and user.email != null and user.email != ''">
+                AND u.email LIKE CONCAT('%', #{user.email}, '%')
+            </if>
+        </where>
+        ORDER BY c.customer_id DESC
+    </select>
+    <select id="selectByIds" resultType="com.javaee.system.po.Customer">
+        SELECT <include refid="Base_Column_List" />
+        FROM customer
+        WHERE customer_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <insert id="insert" parameterType="com.javaee.system.po.Customer" useGeneratedKeys="true" keyProperty="customerId">
+        INSERT INTO customer (
+            user_id, company, industry, address, city, province, postal_code
+        ) VALUES (
+            #{userId}, #{company}, #{industry}, #{address}, #{city}, #{province}, #{postalCode}
+        )
+    </insert>
+    <update id="update" parameterType="com.javaee.system.po.Customer">
+        UPDATE customer
+        <set>
+            <if test="company != null">
+                company = #{company},
+            </if>
+            <if test="industry != null">
+                industry = #{industry},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="city != null">
+                city = #{city},
+            </if>
+            <if test="province != null">
+                province = #{province},
+            </if>
+            <if test="postalCode != null">
+                postal_code = #{postalCode},
+            </if>
+        </set>
+        WHERE customer_id = #{customerId}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM customer WHERE customer_id = #{customerId}
+    </delete>
+    <delete id="deleteBatch">
+        DELETE FROM customer WHERE customer_id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM customer
+    </select>
+    <select id="countBySalesperson" resultType="int" parameterType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.customer_id)
+        FROM customer c
+        INNER JOIN `order` o ON c.customer_id = o.customer_id
+        WHERE o.salesperson_id = #{salespersonId}
+    </select>
+    <select id="selectCustomersBySalespersonUserId" resultType="java.util.Map" parameterType="java.util.Map">
+        SELECT DISTINCT c.customer_id, c.company, c.industry, c.address, c.city, c.province, c.postal_code,
+               u.real_name, u.phone, u.email
+        FROM customer c
+        INNER JOIN user u ON c.user_id = u.user_id
+        INNER JOIN salesperson sp ON sp.user_id = #{salespersonUserId}
+        INNER JOIN `order` o ON c.customer_id = o.customer_id AND o.salesperson_id = sp.salesperson_id
+        <where>
+            <if test="searchText != null">
+                AND (c.company LIKE #{searchText} OR u.real_name LIKE #{searchText})
+            </if>
+            <if test="industry != null and industry != ''">
+                AND c.industry = #{industry}
+            </if>
+        </where>
+        ORDER BY c.customer_id DESC
+    </select>
+    <select id="countCustomersBySalespersonUserId" resultType="long" parameterType="java.util.Map">
+        SELECT COUNT(DISTINCT c.customer_id)
+        FROM customer c
+        INNER JOIN user u ON c.user_id = u.user_id
+        INNER JOIN salesperson sp ON sp.user_id = #{salespersonUserId}
+        INNER JOIN `order` o ON c.customer_id = o.customer_id AND o.salesperson_id = sp.salesperson_id
+        <where>
+            <if test="searchText != null">
+                AND (c.company LIKE #{searchText} OR u.real_name LIKE #{searchText})
+            </if>
+            <if test="industry != null and industry != ''">
+                AND c.industry = #{industry}
+            </if>
+        </where>
+    </select>
+</mapper>

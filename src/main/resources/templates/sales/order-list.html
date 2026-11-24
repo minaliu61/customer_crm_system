@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+    <link rel="stylesheet" href="/crm/css/style.css">
+</head>
+<body>
+<!-- 顶部导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/crm/sales/index.html">客户信息管理系统</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown nav-sales">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                    <i class="fa fa-user"></i> <span id="currentUsername">销售人员</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="/crm/sales/profile.html">个人信息</a>
+                    <a class="dropdown-item" href="/crm/sales/change-password.html">修改密码</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" id="logoutBtn">退出登录</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- 左侧菜单 -->
+        <nav class="col-md-2 d-none d-md-block sidebar">
+            <div class="sidebar-sticky">
+                <ul class="nav flex-column">
+                    <li class="nav-item nav-sales">
+                        <a class="nav-link" href="/crm/sales/profile.html">
+                            个人信息
+                        </a>
+                    </li>
+                    <li class="nav-item nav-sales">
+                        <a class="nav-link" href="/crm/sales/customer-list.html">
+                            客户管理
+                        </a>
+                    </li>
+                    <li class="nav-item nav-sales">
+                        <a class="nav-link active" href="/crm/sales/order-list.html">
+                            订单管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 右侧内容区域 -->
+        <main role="main" class="col-md-10 ml-sm-auto main-content">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">订单管理</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-sm btn-primary" id="createOrderBtn">
+                        <i class="fa fa-plus"></i> 新建订单
+                    </button>
+                </div>
+            </div>
+
+            <!-- 订单列表 -->
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>客户名称</th>
+                        <th>订单金额</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                    <!-- 数据将通过JavaScript动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-end" id="pagination">
+                    <!-- 分页将通过JavaScript动态加载 -->
+                </ul>
+            </nav>
+        </main>
+    </div>
+</div>
+
+<!-- 订单详情模态框 -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailModalLabel">订单详情</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p><strong>订单号:</strong> <span id="detailOrderNo"></span></p>
+                        <p><strong>创建时间:</strong> <span id="detailCreateTime"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>客户名称:</strong> <span id="detailCustomerName"></span></p>
+                        <p><strong>联系电话:</strong> <span id="detailPhone"></span></p>
+                        <p><strong>收货地址:</strong> <span id="detailAddress"></span></p>
+                    </div>
+                </div>
+
+
+
+
+
+                <h5>订单备注</h5>
+                <p id="detailRemark" class="p-3 bg-light rounded">暂无备注</p>
+
+                <hr>
+
+                <h5>订单操作日志</h5>
+                <ul class="list-group" id="orderLogList">
+                    <!-- 订单日志将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+            <div class="modal-footer" id="orderDetailFooter">
+                <!-- 订单操作按钮将根据订单状态动态加载 -->
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 订单编辑模态框 -->
+<div class="modal fade" id="orderEditModal" tabindex="-1" aria-labelledby="orderEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderEditModalLabel">编辑订单</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="orderEditForm">
+                    <input type="hidden" id="editOrderId" name="orderId">
+                    <input type="hidden" id="editCustomerId" name="customerId">
+                    <input type="hidden" id="editUserId" name="userId">
+                    <div class="form-group row">
+                        <label for="editCustomerName" class="col-sm-3 col-form-label">客户名称</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="editCustomerName" name="customerName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="editPhone" class="col-sm-3 col-form-label">联系电话</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="editPhone" name="phone" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label for="editAddress" class="col-sm-3 col-form-label">收货地址</label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" id="editAddress" name="address" rows="2" required></textarea>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group row">
+                        <label for="editRemark" class="col-sm-3 col-form-label">订单备注</label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control" id="editRemark" name="remark" rows="3"></textarea>
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">订单总金额</label>
+                        <div class="col-sm-9">
+                            <p class="form-control-plaintext font-weight-bold" id="editTotalAmount">¥0.00</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveOrderBtn">保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<script src="/crm/js/common.js"></script>
+<script>
+    $(function() {
+        let currentPage = 1;
+        let pageSize = 10;
+        let currentOrderId = null;
+
+        // 加载订单统计
+        function loadOrderStatistics() {
+            get('/order/statistics').then(res => {
+                if (res.code === 200 && res.data) {
+                    const stats = res.data;
+
+                    // 填充统计卡片数据
+                    $('#todayOrderCount').text(stats.todayOrders || 0);
+                    $('#todayOrderAmount').text((stats.todayAmount || 0).toFixed(2));
+                    $('#weekOrderCount').text(stats.weekOrders || 0);
+                    $('#weekOrderAmount').text((stats.weekAmount || 0).toFixed(2));
+                    $('#pendingShipmentCount').text(stats.pendingShipment || 0);
+                    $('#pendingShipmentAmount').text((stats.pendingShipmentAmount || 0).toFixed(2));
+                    $('#pendingPaymentCount').text(stats.pendingPayment || 0);
+                    $('#pendingPaymentAmount').text((stats.pendingPaymentAmount || 0).toFixed(2));
+                }
+            });
+        }
+
+        // 加载订单列表
+        function loadOrderList(page = 1) {
+            currentPage = page;
+
+            // 获取搜索条件
+            const searchText = $('#searchText').val();
+            const status = $('#searchStatus').val();
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+
+            get('/order/my', {
+                pageNum: page,
+                pageSize: pageSize,
+                searchText: searchText,
+                status: status,
+                startDate: startDate,
+                endDate: endDate
+            }).then(res => {
+                if (res.code === 200 && res.data) {
+                    renderOrderTable(res.data);
+                    renderPagination(res.data);
+                }
+            });
+        }
+
+        // 渲染订单表格
+        function renderOrderTable(pageInfo) {
+            const orderList = pageInfo.list || [];
+            let html = '';
+
+            if (orderList.length === 0) {
+                html = '<tr><td colspan="6" class="text-center">暂无订单数据</td></tr>';
+            } else {
+                orderList.forEach(order => {
+                    let statusText = '';
+                    let statusBadgeClass = '';
+
+
+
+                    html += `
+                            <tr>
+                                <td>${order.orderId}</td>
+                                <td>${order.customer.user.realName || '-'}</td>
+                                <td>¥${order.totalAmount.toFixed(2)}</td>
+                                <td>${formatDate(order.createTime)}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary edit-btn" data-id="${order.orderId}">
+                                       编辑
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${order.orderId}">
+                                       删除
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                });
+            }
+
+            $('#orderTableBody').html(html);
+
+            // 绑定编辑按钮事件
+            $('.edit-btn').click(function() {
+                const orderId = $(this).data('id');
+                editOrder(orderId);
+            });
+
+            // 绑定删除按钮事件
+            $('.delete-btn').click(function() {
+                const orderId = $(this).data('id');
+                deleteOrder(orderId);
+            });
+        }
+
+        // 渲染分页
+        function renderPagination(pageInfo) {
+            const totalPages = pageInfo.pages || 1;
+            let html = '';
+
+            // 上一页
+            html += `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage - 1}">上一页</a>
+                    </li>
+                `;
+
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0);" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+            }
+
+            // 下一页
+            html += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="javascript:void(0);" data-page="${currentPage + 1}">下一页</a>
+                    </li>
+                `;
+
+            $('#pagination').html(html);
+
+            // 绑定页码点击事件
+            $('.page-link').click(function() {
+                if (!$(this).parent().hasClass('disabled')) {
+                    const page = $(this).data('page');
+                    loadOrderList(page);
+                }
+            });
+        }
+
+        // 查看订单详情
+        function viewOrderDetail(orderId) {
+        }
+
+        // 更新订单状态
+        function updateOrderStatus(orderId, status) {
+            confirm('确定要更新订单状态吗？').then((result) => {
+                if (result) {
+                    put(`/order/status/${orderId}/${status}`).then(res => {
+                        if (res.code === 200) {
+                            showSuccess('订单状态更新成功');
+                            loadOrderList(currentPage);
+                            $('#orderDetailModal').modal('hide');
+                        } else {
+                            showError(res.msg || '更新失败');
+                        }
+                    });
+                }
+            });
+        }
+
+        // 渲染订单详情
+        function renderOrderDetail(order) {
+            // 填充订单基本信息
+            $('#detailOrderNo').text(order.orderId);
+            $('#detailCreateTime').text(formatDate(order.createTime));
+            $('#detailCustomerName').text(order.customer.user.realName || '-');
+            $('#detailPhone').text(order.phone || '-');
+            $('#detailAddress').text(order.address || '-');
+
+            // 设置订单状态文本和样式
+            let statusText = '';
+            let statusClass = '';
+
+
+
+            $('#detailOrderStatus').text(statusText).addClass(statusClass);
+
+            // 填充订单商品列表
+            let itemsHtml = '';
+            if (order.orderItems && order.orderItems.length > 0) {
+                order.orderItems.forEach(item => {
+                    itemsHtml += `
+                <tr>
+                    <td>${item.productName || '-'}</td>
+                    <td>¥${item.price.toFixed(2)}</td>
+                    <td>${item.quantity}</td>
+                    <td>¥${(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+            `;
+                });
+            } else {
+                itemsHtml = '<tr><td colspan="4" class="text-center">无商品信息</td></tr>';
+            }
+
+            $('#orderItemsBody').html(itemsHtml);
+            $('#detailTotalAmount').text(order.totalAmount.toFixed(2));
+
+            // 填充订单备注
+            if (order.remark) {
+                $('#detailRemark').text(order.remark);
+            } else {
+                $('#detailRemark').text('暂无备注');
+            }
+
+            // 填充订单日志
+            let logsHtml = '';
+            if (order.logs && order.logs.length > 0) {
+                order.logs.forEach(log => {
+                    logsHtml += `
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between">
+                        <span>${log.operationName}</span>
+                        <small class="text-muted">${formatDate(log.createTime)}</small>
+                    </div>
+                    <p class="mb-0">${log.operationDesc || '-'}</p>
+                </li>
+            `;
+                });
+            } else {
+                logsHtml = '<li class="list-group-item text-muted">暂无操作日志</li>';
+            }
+
+            $('#orderLogList').html(logsHtml);
+
+            // 根据订单状态动态显示操作按钮
+            updateOrderDetailFooter(order);
+        }
+
+        // 根据订单状态更新模态框底部的操作按钮
+        function updateOrderDetailFooter(order) {
+            const footer = $('#orderDetailFooter');
+            footer.empty(); // 清空现有按钮
+
+            // 关闭按钮始终存在
+            footer.append(`
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+    `);
+
+
+        }
+
+        // 编辑订单
+        function editOrder(orderId) {
+            currentOrderId = orderId;
+
+            // 加载订单详情
+            get(`/order/${orderId}`).then(res => {
+                if (res.code === 200 && res.data) {
+                    const order = res.data;
+                    fillEditForm(order);
+                    $('#orderEditModal').modal('show');
+                } else {
+                    showError('加载订单详情失败');
+                }
+            });
+        }
+
+        // 填充编辑表单
+        function fillEditForm(order) {
+            $('#editOrderId').val(order.orderId);
+            $('#editCustomerId').val(order.customer.customerId);
+            $('#editUserId').val(order.customer.user.userId);
+            $('#editCustomerName').val(order.customer.user.realName || '');
+            $('#editPhone').val(order.phone || '');
+            $('#editAddress').val(order.address || '');
+            $('#editStatus').val(order.status);
+            $('#editRemark').val(order.remark || '');
+            $('#editTotalAmount').text(`¥${order.totalAmount.toFixed(2)}`);
+
+            // 填充订单商品列表
+            let itemsHtml = '';
+            if (order.orderItems && order.orderItems.length > 0) {
+                order.orderItems.forEach((item, index) => {
+                    itemsHtml += `
+                            <div class="form-group row border-bottom pb-3">
+                                <div class="col-sm-12">
+                                    <h6>${item.productName || '-'}</h6>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <label class="small">单价</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">¥</span>
+                                        </div>
+                                        <input type="number" class="form-control edit-item-price"
+                                            data-index="${index}" value="${item.price}" min="0" step="0.01" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <label class="small">数量</label>
+                                    <input type="number" class="form-control edit-item-quantity"
+                                        data-index="${index}" value="${item.quantity}" min="1" step="1">
+                                </div>
+                            </div>
+                        `;
+                });
+            } else {
+                itemsHtml = '<div class="text-center text-muted py-4">无商品信息</div>';
+            }
+
+            $('#editOrderItems').html(itemsHtml);
+
+            // 绑定数量变化事件，用于实时计算总价
+            $('.edit-item-quantity').on('input', calculateTotalAmount);
+        }
+
+        // 计算订单总金额
+        function calculateTotalAmount() {
+            let total = 0;
+
+            $('.edit-item-price').each(function(index) {
+                const price = parseFloat($(this).val());
+                const quantity = parseInt($('.edit-item-quantity[data-index="' + index + '"]').val());
+                total += price * quantity;
+            });
+
+            $('#editTotalAmount').text(`¥${total.toFixed(2)}`);
+        }
+
+        // 保存订单修改
+        function saveOrder() {
+            const orderId = $('#editOrderId').val();
+           const  customerId = $('#editCustomerId').val();
+            const  userId = $('#editUserId').val();
+            const formData = {
+                orderId: orderId,
+                customerId:customerId,
+                userId:userId,
+                customerName: $('#editCustomerName').val(),
+                phone: $('#editPhone').val(),
+                address: $('#editAddress').val(),
+                status: parseInt($('#editStatus').val()),
+                remark: $('#editRemark').val(),
+            };
+
+            // 收集商品信息
+            $('.edit-item-price').each(function(index) {
+                const price = parseFloat($(this).val());
+                const quantity = parseInt($('.edit-item-quantity[data-index="' + index + '"]').val());
+
+                formData.orderItems.push({
+                    price: price,
+                    quantity: quantity
+                });
+            });
+
+            // 计算总金额
+            const totalAmountText = $('#editTotalAmount').text().replace('¥', '');
+            formData.totalAmount = parseFloat(totalAmountText);
+
+            // 提交修改
+            put(`/order/${orderId}`, formData).then(res => {
+                if (res.code === 200) {
+
+                    loadOrderList(currentPage);
+                    $('#orderEditModal').modal('hide');
+                } else {
+
+                }
+            });
+        }
+
+        // 删除订单
+        function deleteOrder(orderId) {
+            if (confirm('确定要删除该订单吗？')) {
+                del(`/order/${orderId}`).then(res => {
+                    if (res.code === 200) {
+                        // 重新加载列表和统计数据
+                        loadOrderList(currentPage);
+                        loadOrderStatistics();
+
+                        // 显示成功消息
+                        showSuccess('删除成功');
+                    } else {
+                        showError(res.msg || '删除失败');
+                    }
+                });
+            }
+        }
+
+        // 创建订单按钮点击事件
+        $('#createOrderBtn').click(function() {
+            window.location.href = '/crm/sales/order-create.html';
+        });
+
+
+        // 保存按钮点击事件
+        $(document).on('click', '#saveOrderBtn', saveOrder);
+
+        // 初始化加载
+        loadOrderStatistics();
+        loadOrderList();
+
+        // 初始化当前用户名显示
+        get('/user/current').then(res => {
+            if (res.code === 200 && res.data) {
+                $('#currentUsername').text(res.data.realName || res.data.username);
+            }
+        });
+
+        // 退出登录按钮事件
+        $(document).on('click', '#logoutBtn', function() {
+            logout();
+        });
+    });
+</script>
+</body>
+</html>
